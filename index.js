@@ -9,6 +9,7 @@ const client = new Client({
     ]
 });
 
+// Configuración del Anti-Spam
 const MAPA_COOLDOWN = new Map();
 const LIMITE_MENSAJES = 5; 
 const TIEMPO_SPAM = 3000;   
@@ -18,7 +19,11 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
+    // 1. Ignorar mensajes de bots o si ocurren en Mensajes Privados
     if (message.author.bot || !message.guild) return;
+
+    // 2. Filtrar por el canal específico solicitado
+    if (message.channel.id !== '1553465710875902184') return;
 
     const usuarioId = message.author.id;
     const tiempoActual = Date.now();
@@ -33,6 +38,7 @@ client.on('messageCreate', async (message) => {
     const mensajesRecientes = historialMensajes.filter(tiempo => (tiempoActual - tiempo) < TIEMPO_SPAM);
     MAPA_COOLDOWN.set(usuarioId, mensajesRecientes);
 
+    // 3. Ejecutar sanción si supera el límite de mensajes
     if (mensajesRecientes.length > LIMITE_MENSAJES) {
         if (!message.guild.members.me.permissionsIn(message.channel).has(PermissionFlagsBits.ManageMessages)) {
             return console.log("Error: No tengo permisos de administración de mensajes.");
@@ -48,5 +54,6 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Railway leerá automáticamente el Token desde las variables de entorno
+// Autenticación segura mediante variable de entorno en Railway
 client.login(process.env.DISCORD_TOKEN);
+
